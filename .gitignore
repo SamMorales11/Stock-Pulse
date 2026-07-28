@@ -1,0 +1,20 @@
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data & Model Lokal (Opsional, agar repo ringan)
+*.sqlite
+data/*.sqlite
+data/models/*.pkl
+
+# VS Code & System Files
+.vscode/
+.DS_Store
+*.log
