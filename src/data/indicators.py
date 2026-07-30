@@ -48,6 +48,13 @@ def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df['Daily_Return'] = df['Close'].pct_change()
     df['Vol_SMA_20'] = ta.sma(df['Volume'], length=20)
     df['Vol_Ratio'] = df['Volume'] / (df['Vol_SMA_20'] + 1e-6)
+
+    # 7. Fitur Relatif / Persentase (Bisa dipakai lintas saham beda nominal)
+    df['Dist_SMA_20'] = (df['Close'] - df['SMA_20']) / (df['SMA_20'] + 1e-6)
+    df['Dist_SMA_50'] = (df['Close'] - df['SMA_50']) / (df['SMA_50'] + 1e-6)
+    df['Dist_EMA_200'] = (df['Close'] - df['EMA_200']) / (df['EMA_200'] + 1e-6)
+    df['BB_Width'] = (df['BB_Upper'] - df['BB_Lower']) / (df['BB_Middle'] + 1e-6)
+    df['BB_Pos'] = (df['Close'] - df['BB_Lower']) / ((df['BB_Upper'] - df['BB_Lower']) + 1e-6)
     
     return df
 
