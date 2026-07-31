@@ -45,10 +45,12 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
+    /* 1. Sembunyikan Navigasi Bawaan Streamlit */
     [data-testid="stSidebarNav"] {
         display: none !important;
     }
 
+    /* 2. Background Aplikasi */
     .main {
         background-color: #0b0f17;
     }
@@ -63,6 +65,7 @@ st.markdown("""
         padding-bottom: 1.2rem;
     }
 
+    /* 3. Branding Header Card di Sidebar */
     .sidebar-brand-card {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
         border: 1px solid #1e293b;
@@ -88,6 +91,7 @@ st.markdown("""
         letter-spacing: 0.3px;
     }
 
+    /* 4. Styling Streamlit Radio Buttons di Sidebar */
     div[data-testid="stRadio"] > label {
         display: none !important;
     }
@@ -140,6 +144,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
 
+    /* 5. Footer Info Box di Sidebar */
     .sidebar-footer {
         margin-top: 2.5rem;
         padding: 12px;
@@ -158,6 +163,7 @@ st.markdown("""
         margin-right: 6px;
     }
 
+    /* 6. Header Banner */
     .hero-container {
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         border: 1px solid #334155;
@@ -189,6 +195,7 @@ st.markdown("""
         font-weight: 600;
     }
 
+    /* 7. Metric Cards Design */
     .metric-card {
         background-color: #1e293b;
         border: 1px solid #334155;
@@ -221,13 +228,105 @@ st.markdown("""
     .card-sell { border-top: 3px solid #ef4444; }
     .card-sell .metric-value { color: #f87171; }
 
-    div[data-testid="stDataFrame"] {
+    /* 8. CUSTOM MODERN TABLE DESIGN */
+    .custom-table-container {
         border: 1px solid #334155;
-        border-radius: 8px;
+        border-radius: 10px;
         overflow: hidden;
+        background-color: #1e293b;
+        margin-top: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    .custom-table th {
+        background-color: #0f172a;
+        padding: 14px 18px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid #334155;
+    }
+    .custom-table td {
+        padding: 12px 18px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        vertical-align: middle;
+    }
+    .custom-table tr.table-row:hover {
+        background-color: rgba(51, 65, 85, 0.4);
+        transition: background-color 0.15s ease;
+    }
+    .custom-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* BADGES DI DALAM TABEL */
+    .custom-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    .badge-buy {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-wait {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-sell {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    div[data-baseweb="select"] > div {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        border-radius: 8px !important;
     }
     </style>
 """, unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# FUNGSI RENDER TABEL MODERN HTML (TANPA SPASI INDENTASI)
+# ---------------------------------------------------------
+def render_modern_table(df):
+    if df.empty:
+        st.info("Tidak ada data sinyal yang sesuai dengan filter.")
+        return
+
+    rows_html = ""
+    for _, row in df.iterrows():
+        signal = str(row.get('signal_label', '')).upper()
+        if "BUY" in signal:
+            badge_class = "badge-buy"
+            badge_text = "🟢 BUY NOW"
+        elif "SELL" in signal or "AVOID" in signal:
+            badge_class = "badge-sell"
+            badge_text = "🔴 SELL / AVOID"
+        else:
+            badge_class = "badge-wait"
+            badge_text = "🟡 WAIT"
+        
+        close_val = row.get('close', 0)
+        formatted_price = f"Rp {close_val:,.0f}".replace(",", ".")
+        
+        rows_html += f'<tr class="table-row"><td style="color: #94a3b8; font-size: 0.85rem;">{row.get("date", "")}</td><td style="font-weight: 700; color: #38bdf8; font-size: 0.9rem;">{row.get("ticker", "")}</td><td style="font-weight: 600; color: #f8fafc; font-size: 0.88rem;">{formatted_price}</td><td><span class="custom-badge {badge_class}">{badge_text}</span></td><td style="color: #94a3b8; font-size: 0.82rem;">{row.get("reason", "")}</td></tr>'
+
+    table_html = f'<div class="custom-table-container"><table class="custom-table"><thead><tr><th style="width: 15%;">TANGGAL</th><th style="width: 15%;">TICKER</th><th style="width: 20%;">HARGA</th><th style="width: 20%;">SINYAL ML</th><th style="width: 30%;">LOGIKA & GUARDRAILS</th></tr></thead><tbody>{rows_html}</tbody></table></div>'
+    
+    st.markdown(table_html, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 3. SIDEBAR NAVIGATION
@@ -325,7 +424,7 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        st.markdown("##### 📋 Hasil Skrining Sinyal")
+        st.markdown("##### 📋 Hasil Skrining Sinyal Harian")
 
         selected_filter = st.multiselect(
             "Filter Sinyal:",
@@ -335,18 +434,8 @@ else:
 
         filtered_df = df_signals[df_signals['signal_label'].isin(selected_filter)]
 
-        st.dataframe(
-            filtered_df[['date', 'ticker', 'close', 'signal_label', 'reason']],
-            column_config={
-                "date": "Tanggal",
-                "ticker": "Ticker",
-                "close": st.column_config.NumberColumn("Harga (Rp)", format="Rp %'d"),
-                "signal_label": "Sinyal ML",
-                "reason": "Logika & Guardrails"
-            },
-            use_container_width=True,
-            hide_index=True
-        )
+        # Render Tabel Modern HTML
+        render_modern_table(filtered_df)
 
     # ---------------------------------------------------------
     # MENU 2: DETAIL SAHAM & GRAFIK
@@ -370,7 +459,7 @@ else:
                     st.error("Gagal memuat data grafik saham.")
 
     # ---------------------------------------------------------
-    # MENU 3: ANALISA FUNDAMENTAL (UPDATED)
+    # MENU 3: ANALISA FUNDAMENTAL
     # ---------------------------------------------------------
     elif "Analisa Fundamental" in menu:
         st.markdown("##### 📊 Analisa Fundamental & Profil Perusahaan")
@@ -385,7 +474,6 @@ else:
                 info = fetch_fundamental_info(selected_ticker)
                 
                 if info and info.get('shortName'):
-                    # 1. Company Profile Header
                     long_name = info.get('longName', selected_ticker)
                     sector = info.get('sector', 'N/A')
                     industry = info.get('industry', 'N/A')
@@ -400,7 +488,6 @@ else:
                         </div>
                     """, unsafe_allow_html=True)
 
-                    # Helper Formatting Data Financial
                     mcap = info.get('marketCap')
                     if mcap and mcap >= 1e12:
                         mcap_str = f"Rp {mcap / 1e12:.2f} T"
@@ -417,7 +504,6 @@ else:
                     high_52 = f"Rp {info.get('fiftyTwoWeekHigh'):,.0f}" if info.get('fiftyTwoWeekHigh') else "N/A"
                     low_52 = f"Rp {info.get('fiftyTwoWeekLow'):,.0f}" if info.get('fiftyTwoWeekLow') else "N/A"
 
-                    # 2. Financial Metrics Grid (Baris 1)
                     c1, c2, c3, c4 = st.columns(4)
                     with c1:
                         st.markdown(f"""
@@ -450,7 +536,6 @@ else:
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
-                    # Financial Metrics Grid (Baris 2)
                     c5, c6, c7, c8 = st.columns(4)
                     with c5:
                         st.markdown(f"""
@@ -483,7 +568,6 @@ else:
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
-                    # 3. Profil Deskripsi Perusahaan
                     with st.expander("ℹ️ Profil & Ringkasan Bisnis Perusahaan", expanded=True):
                         st.write(summary)
                 else:
