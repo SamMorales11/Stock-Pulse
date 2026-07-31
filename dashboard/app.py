@@ -1,6 +1,7 @@
 # dashboard/app.py
 import streamlit as st
 import pandas as pd
+import yfinance as yf
 import os
 import sys
 
@@ -11,6 +12,17 @@ from src.database.repository import get_latest_signals
 from src.data.fetcher import fetch_stock_data
 from src.data.indicators import add_technical_indicators
 from dashboard.components.charts import plot_stock_chart
+
+# ---------------------------------------------------------
+# FUNGSI CACHING DATA FUNDAMENTAL (YAHOO FINANCE)
+# ---------------------------------------------------------
+@st.cache_data(ttl=3600)
+def fetch_fundamental_info(ticker: str):
+    try:
+        stock = yf.Ticker(ticker)
+        return stock.info
+    except Exception:
+        return None
 
 # ---------------------------------------------------------
 # 1. KONFIGURASI HALAMAN
@@ -27,19 +39,16 @@ st.set_page_config(
 # ---------------------------------------------------------
 st.markdown("""
     <style>
-    /* Import Font Inter */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
 
-    /* 1. Sembunyikan Navigasi Bawaan Streamlit */
     [data-testid="stSidebarNav"] {
         display: none !important;
     }
 
-    /* 2. Style Background Utama & Sidebar */
     .main {
         background-color: #0b0f17;
     }
@@ -54,7 +63,6 @@ st.markdown("""
         padding-bottom: 1.2rem;
     }
 
-    /* 3. Branding Header Card di Sidebar */
     .sidebar-brand-card {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
         border: 1px solid #1e293b;
@@ -80,18 +88,14 @@ st.markdown("""
         letter-spacing: 0.3px;
     }
 
-    /* 4. MERAPIKAN STREAMLIT RADIO BUTTON PADA SIDEBAR */
-    /* Hapus Label Judul Radio */
     div[data-testid="stRadio"] > label {
         display: none !important;
     }
     
-    /* Gap Antar Item Menu */
     div[data-testid="stRadio"] > div[role="radiogroup"] {
         gap: 6px !important;
     }
 
-    /* Style Item Menu Pasif */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label {
         background-color: transparent !important;
         border: 1px solid transparent !important;
@@ -108,7 +112,6 @@ st.markdown("""
         margin: 0 !important;
     }
 
-    /* HAPUS TOTAL LINGKARAN RADIO BUTTON (CIRCLE DOTS) */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label > div:first-child {
         display: none !important;
         visibility: hidden !important;
@@ -117,7 +120,6 @@ st.markdown("""
         margin: 0 !important;
     }
 
-    /* Efek Hover Menu */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label:hover {
         background-color: #1e293b !important;
         color: #f1f5f9 !important;
@@ -125,7 +127,6 @@ st.markdown("""
         transform: translateX(2px);
     }
 
-    /* Style Item Menu AKTIF (Glow & Left Active Border) */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label[data-checked="true"] {
         background: linear-gradient(90deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.03) 100%) !important;
         color: #38bdf8 !important;
@@ -139,7 +140,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
 
-    /* 5. Footer Info Box di Bawah Sidebar */
     .sidebar-footer {
         margin-top: 2.5rem;
         padding: 12px;
@@ -158,7 +158,6 @@ st.markdown("""
         margin-right: 6px;
     }
 
-    /* 6. Header Banner Utama */
     .hero-container {
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         border: 1px solid #334155;
@@ -190,7 +189,6 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* 7. Metric Cards Design */
     .metric-card {
         background-color: #1e293b;
         border: 1px solid #334155;
@@ -223,7 +221,6 @@ st.markdown("""
     .card-sell { border-top: 3px solid #ef4444; }
     .card-sell .metric-value { color: #f87171; }
 
-    /* Custom Table Container */
     div[data-testid="stDataFrame"] {
         border: 1px solid #334155;
         border-radius: 8px;
@@ -236,7 +233,6 @@ st.markdown("""
 # 3. SIDEBAR NAVIGATION
 # ---------------------------------------------------------
 with st.sidebar:
-    # Branding Card
     st.markdown("""
         <div class="sidebar-brand-card">
             <div class="brand-title">⚡ StockPulse</div>
@@ -244,16 +240,13 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
     
-    # Subheader Navigasi
     st.markdown("<p style='color: #475569; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;'>MAIN MENU</p>", unsafe_allow_html=True)
     
-    # Menu Navigasi Berbentuk Tab Modern
     menu = st.sidebar.radio(
         "",
         ["📋  Screener Sinyal", "📈  Detail Saham", "📊  Analisa Fundamental"]
     )
 
-    # Footer Status Widget di Bawah Sidebar
     st.markdown("""
         <div class="sidebar-footer">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
@@ -296,7 +289,6 @@ else:
         wait_count = len(df_signals[df_signals['signal_label'] == "WAIT"])
         sell_count = len(df_signals[df_signals['signal_label'] == "SELL / AVOID"])
 
-        # Metric Cards Layout
         c1, c2, c3, c4 = st.columns(4)
 
         with c1:
@@ -333,7 +325,6 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Tabel Filter & Data
         st.markdown("##### 📋 Hasil Skrining Sinyal")
 
         selected_filter = st.multiselect(
@@ -379,14 +370,121 @@ else:
                     st.error("Gagal memuat data grafik saham.")
 
     # ---------------------------------------------------------
-    # MENU 3: ANALISA FUNDAMENTAL
+    # MENU 3: ANALISA FUNDAMENTAL (UPDATED)
     # ---------------------------------------------------------
     elif "Analisa Fundamental" in menu:
-        st.markdown("##### 📊 Analisa Fundamental Saham")
+        st.markdown("##### 📊 Analisa Fundamental & Profil Perusahaan")
         
         selected_ticker = st.selectbox(
             "Pilih Saham:",
             options=df_signals['ticker'].tolist()
         )
         
-        st.info(f"Modul Analisa Fundamental untuk **{selected_ticker}** siap dihubungkan dengan data laporan keuangan.")
+        if selected_ticker:
+            with st.spinner(f"Mengambil data fundamental {selected_ticker}..."):
+                info = fetch_fundamental_info(selected_ticker)
+                
+                if info and info.get('shortName'):
+                    # 1. Company Profile Header
+                    long_name = info.get('longName', selected_ticker)
+                    sector = info.get('sector', 'N/A')
+                    industry = info.get('industry', 'N/A')
+                    summary = info.get('longBusinessSummary', 'Deskripsi perusahaan tidak tersedia.')
+
+                    st.markdown(f"""
+                        <div class="hero-container" style="padding: 18px 22px; margin-bottom: 20px;">
+                            <div style="font-size: 1.3rem; font-weight: 700; color: #f8fafc;">{long_name} ({selected_ticker})</div>
+                            <div style="font-size: 0.85rem; color: #38bdf8; margin-top: 4px;">
+                                🏢 Sektor: <b>{sector}</b> | 🏭 Industri: <b>{industry}</b>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    # Helper Formatting Data Financial
+                    mcap = info.get('marketCap')
+                    if mcap and mcap >= 1e12:
+                        mcap_str = f"Rp {mcap / 1e12:.2f} T"
+                    elif mcap and mcap >= 1e9:
+                        mcap_str = f"Rp {mcap / 1e9:.2f} M"
+                    else:
+                        mcap_str = "N/A"
+
+                    per = f"{info.get('trailingPE'):.2f}x" if info.get('trailingPE') else "N/A"
+                    pbv = f"{info.get('priceToBook'):.2f}x" if info.get('priceToBook') else "N/A"
+                    roe = f"{info.get('returnOnEquity') * 100:.2f}%" if info.get('returnOnEquity') else "N/A"
+                    div_yield = f"{info.get('dividendYield') * 100:.2f}%" if info.get('dividendYield') else "0.00%"
+                    eps = f"Rp {info.get('trailingEps'):,.0f}" if info.get('trailingEps') else "N/A"
+                    high_52 = f"Rp {info.get('fiftyTwoWeekHigh'):,.0f}" if info.get('fiftyTwoWeekHigh') else "N/A"
+                    low_52 = f"Rp {info.get('fiftyTwoWeekLow'):,.0f}" if info.get('fiftyTwoWeekLow') else "N/A"
+
+                    # 2. Financial Metrics Grid (Baris 1)
+                    c1, c2, c3, c4 = st.columns(4)
+                    with c1:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">Market Cap</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #38bdf8;">{mcap_str}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c2:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">PER (P/E Ratio)</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #f8fafc;">{per}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c3:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">PBV (P/B Ratio)</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #f8fafc;">{pbv}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c4:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">ROE (Return on Equity)</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #34d399;">{roe}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    # Financial Metrics Grid (Baris 2)
+                    c5, c6, c7, c8 = st.columns(4)
+                    with c5:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">Dividend Yield</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #fbbf24;">{div_yield}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c6:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">EPS (Laba / Lembar)</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #f8fafc;">{eps}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c7:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">52-Week High</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #f8fafc;">{high_52}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with c8:
+                        st.markdown(f"""
+                            <div class="metric-card">
+                                <div class="metric-label">52-Week Low</div>
+                                <div class="metric-value" style="font-size: 1.4rem; color: #f8fafc;">{low_52}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    # 3. Profil Deskripsi Perusahaan
+                    with st.expander("ℹ️ Profil & Ringkasan Bisnis Perusahaan", expanded=True):
+                        st.write(summary)
+                else:
+                    st.error(f"Gagal memuat data fundamental untuk **{selected_ticker}** dari Yahoo Finance.")
