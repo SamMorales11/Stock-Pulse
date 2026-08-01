@@ -234,7 +234,7 @@ st.markdown("""
         border-radius: 10px;
         overflow: hidden;
         background-color: #1e293b;
-        margin-top: 12px;
+        margin-top: 8px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
     .custom-table {
@@ -265,7 +265,6 @@ st.markdown("""
         border-bottom: none;
     }
 
-    /* BADGES DI DALAM TABEL */
     .custom-badge {
         display: inline-block;
         padding: 4px 12px;
@@ -290,16 +289,74 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
+    /* 9. STYLING MULTISELECT FILTER & SELECTBOX */
     div[data-baseweb="select"] > div {
         background-color: #1e293b !important;
-        border-color: #334155 !important;
+        border: 1px solid #334155 !important;
         border-radius: 8px !important;
+        min-height: 42px !important;
+    }
+    div[data-baseweb="select"] > div:focus-within {
+        border-color: #38bdf8 !important;
+    }
+    div[data-baseweb="tag"] {
+        background-color: #0f172a !important;
+        border: 1px solid #334155 !important;
+        border-radius: 6px !important;
+        padding: 3px 8px !important;
+        margin: 2px !important;
+    }
+    div[data-baseweb="tag"] span {
+        color: #38bdf8 !important;
+        font-weight: 600 !important;
+        font-size: 0.78rem !important;
+    }
+    div[data-baseweb="tag"] svg {
+        fill: #64748b !important;
+    }
+    div[data-baseweb="tag"] svg:hover {
+        fill: #f87171 !important;
+    }
+    div[data-testid="stWidgetLabel"] p {
+        color: #94a3b8 !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* 10. STYLING KUSTOM COMPANY PROFILE CARD */
+    .profile-card {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin-top: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .profile-header {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+        padding-bottom: 10px;
+    }
+    .profile-body {
+        font-size: 0.88rem;
+        color: #cbd5e1;
+        line-height: 1.7;
+        text-align: justify;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# FUNGSI RENDER TABEL MODERN HTML (TANPA SPASI INDENTASI)
+# FUNGSI RENDER TABEL MODERN HTML
 # ---------------------------------------------------------
 def render_modern_table(df):
     if df.empty:
@@ -424,13 +481,23 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        st.markdown("##### 📋 Hasil Skrining Sinyal Harian")
+        # Header Toolbar (Judul + Multiselect Filter Berdampingan)
+        col_title, col_filter = st.columns([1.2, 1])
 
-        selected_filter = st.multiselect(
-            "Filter Sinyal:",
-            options=["BUY NOW", "WAIT", "SELL / AVOID"],
-            default=["BUY NOW", "WAIT", "SELL / AVOID"]
-        )
+        with col_title:
+            st.markdown("""
+                <div style="padding-top: 4px;">
+                    <h4 style="color: #f8fafc; font-weight: 700; margin: 0; font-size: 1.15rem;">📋 Hasil Skrining Sinyal Harian</h4>
+                    <p style="color: #64748b; font-size: 0.8rem; margin: 2px 0 0 0;">Daftar keputusan rekomendasi sinyal berdasarkan kuantitatif & guardrails</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+        with col_filter:
+            selected_filter = st.multiselect(
+                "Filter Sinyal Tampil:",
+                options=["BUY NOW", "WAIT", "SELL / AVOID"],
+                default=["BUY NOW", "WAIT", "SELL / AVOID"]
+            )
 
         filtered_df = df_signals[df_signals['signal_label'].isin(selected_filter)]
 
@@ -568,7 +635,16 @@ else:
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
-                    with st.expander("ℹ️ Profil & Ringkasan Bisnis Perusahaan", expanded=True):
-                        st.write(summary)
+                    # REVISI PROFILE CARD MODERN (MENGGANTIKAN EXPANDER BIASA)
+                    st.markdown(f"""
+                        <div class="profile-card">
+                            <div class="profile-header">
+                                <span style="color: #38bdf8;">🏢</span> Profil & Ringkasan Bisnis Perusahaan
+                            </div>
+                            <div class="profile-body">
+                                {summary}
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
                 else:
                     st.error(f"Gagal memuat data fundamental untuk **{selected_ticker}** dari Yahoo Finance.")
