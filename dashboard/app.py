@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import yfinance as yf
+import plotly.graph_objects as go
 import os
 import sys
 
@@ -14,7 +15,7 @@ from src.data.indicators import add_technical_indicators
 from dashboard.components.charts import plot_stock_chart
 
 # ---------------------------------------------------------
-# FUNGSI CACHING DATA FUNDAMENTAL (YAHOO FINANCE)
+# FUNGSI CACHING DATA (YAHOO FINANCE)
 # ---------------------------------------------------------
 @st.cache_data(ttl=3600)
 def fetch_fundamental_info(ticker: str):
@@ -23,6 +24,100 @@ def fetch_fundamental_info(ticker: str):
         return stock.info
     except Exception:
         return None
+
+@st.cache_data(ttl=1800)
+def fetch_ihsg_summary():
+    try:
+        ihsg = yf.Ticker("^JKSE")
+        df = ihsg.history(period="1mo")
+        if df.empty or len(df) < 2:
+            return None
+        
+        latest_close = df['Close'].iloc[-1]
+        prev_close = df['Close'].iloc[-2]
+        change = latest_close - prev_close
+        pct_change = (change / prev_close) * 100
+        
+        # Logika Sentimen Pasar berbasis MA-20
+        ma20 = df['Close'].tail(20).mean()
+        if latest_close > ma20 * 1.002:
+            sentiment = "🟢 BULLISH"
+            sentiment_color = "#34d399"
+        elif latest_close < ma20 * 0.998:
+            sentiment = "🔴 BEARISH"
+            sentiment_color = "#f87171"
+        else:
+            sentiment = "🟡 SIDEWAYS"
+            sentiment_color = "#fbbf24"
+            
+        return {
+            "close": latest_close,
+            "change": change,
+            "pct_change": pct_change,
+            "sentiment": sentiment,
+            "sentiment_color": sentiment_color,
+            "df_spark": df['Close'].tail(30)
+        }
+    except Exception:
+        return None
+
+# ---------------------------------------------------------
+# FUNGSI MINI SPARKLINE CHART (REVISED & INTEGRATED CARD)
+# ---------------------------------------------------------
+def create_sparkline(df_series, is_positive):
+    line_color = "#34d399" if is_positive else "#f87171"
+    fill_color = "rgba(52, 211, 153, 0.12)" if is_positive else "rgba(248, 113, 113, 0.12)"
+    
+    dates = [d.strftime('%d %b') if hasattr(d, 'strftime') else str(d) for d in df_series.index]
+    values = df_series.values
+    
+    fig = go.Figure()
+    
+    # 1. Area Chart dengan Kurva Halus (Spline)
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=values,
+        mode='lines',
+        fill='tozeroy',
+        fillcolor=fill_color,
+        line=dict(color=line_color, width=2.5, shape='spline', smoothing=1.2),
+        hoverinfo='text',
+        text=[f"Tanggal: {d}<br>IHSG: <b>{v:,.2f}</b>" for d, v in zip(dates, values)]
+    ))
+    
+    # 2. Titik Penanda (Marker Dot) di Ujung Tren
+    fig.add_trace(go.Scatter(
+        x=[dates[-1]],
+        y=[values[-1]],
+        mode='markers',
+        marker=dict(color=line_color, size=6),
+        hoverinfo='none',
+        showlegend=False
+    ))
+    
+    fig.update_layout(
+        title=dict(
+            text="TREN IHSG (30 HARI)",
+            font=dict(family="Inter, sans-serif", size=11, color="#94a3b8"),
+            x=0.03,
+            y=0.88
+        ),
+        margin=dict(l=8, r=8, t=30, b=8),
+        height=82,
+        paper_bgcolor='#1e293b',
+        plot_bgcolor='#1e293b',
+        xaxis=dict(visible=False, fixedrange=True),
+        yaxis=dict(visible=False, fixedrange=True),
+        showlegend=False,
+        hovermode='x unified',
+        hoverlabel=dict(
+            bgcolor='#0f172a',
+            font_size=11,
+            font_family="Inter, sans-serif",
+            font_color='#f8fafc'
+        )
+    )
+    return fig
 
 # ---------------------------------------------------------
 # 1. KONFIGURASI HALAMAN
@@ -35,7 +130,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# 2. INJEKSI CUSTOM CSS (PREMIUM DARK SIDEBAR & DASHBOARD)
+# 2. INJEKSI CUSTOM CSS (PREMIUM DARK THEME)
 # ---------------------------------------------------------
 st.markdown("""
     <style>
@@ -169,7 +264,7 @@ st.markdown("""
         border: 1px solid #334155;
         border-radius: 12px;
         padding: 22px 26px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
     }
     .hero-title {
         font-size: 1.6rem;
@@ -228,7 +323,16 @@ st.markdown("""
     .card-sell { border-top: 3px solid #ef4444; }
     .card-sell .metric-value { color: #f87171; }
 
-    /* 8. CUSTOM MODERN TABLE DESIGN */
+    /* 8. STYLING KUSTOM PLOTLY SPARKLINE CARD CONTAINER */
+    div[data-testid="stPlotlyChart"] {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* 9. CUSTOM MODERN TABLE DESIGN */
     .custom-table-container {
         border: 1px solid #334155;
         border-radius: 10px;
@@ -289,7 +393,7 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    /* 9. STYLING MULTISELECT FILTER & SELECTBOX */
+    /* 10. STYLING MULTISELECT FILTER & SELECTBOX */
     div[data-baseweb="select"] > div {
         background-color: #1e293b !important;
         border: 1px solid #334155 !important;
@@ -326,7 +430,7 @@ st.markdown("""
         margin-bottom: 4px !important;
     }
 
-    /* 10. STYLING KUSTOM COMPANY PROFILE CARD */
+    /* 11. COMPANY PROFILE CARD */
     .profile-card {
         background-color: #1e293b;
         border: 1px solid #334155;
@@ -428,7 +532,54 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Load Sinyal Terbaru dari SQLite Database
+# ---------------------------------------------------------
+# 5. MARKET OVERVIEW BAR (IHSG WIDGET)
+# ---------------------------------------------------------
+ihsg_data = fetch_ihsg_summary()
+if ihsg_data:
+    is_pos = ihsg_data['change'] >= 0
+    change_sign = "+" if is_pos else ""
+    change_color = "#34d399" if is_pos else "#f87171"
+    
+    formatted_close = f"{ihsg_data['close']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    formatted_change_val = f"{ihsg_data['change']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    change_str = f"{change_sign}{formatted_change_val} ({change_sign}{ihsg_data['pct_change']:.2f}%)"
+
+    col_i1, col_i2, col_i3 = st.columns([1.5, 1.2, 1.3])
+
+    with col_i1:
+        st.markdown(f"""
+            <div class="metric-card" style="border-top: 3px solid {change_color};">
+                <div class="metric-label">🇮🇩 Indeks Harga Saham Gabungan (IHSG)</div>
+                <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 4px;">
+                    <span class="metric-value" style="color: #f8fafc; font-size: 1.55rem;">{formatted_close}</span>
+                    <span style="color: {change_color}; font-weight: 700; font-size: 0.88rem;">{change_str}</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col_i2:
+        st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Sentimen Pasar (MA-20)</div>
+                <div style="margin-top: 8px;">
+                    <span style="background-color: rgba(15, 23, 42, 0.8); border: 1px solid {ihsg_data['sentiment_color']}; color: {ihsg_data['sentiment_color']}; padding: 5px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem;">
+                        {ihsg_data['sentiment']}
+                    </span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col_i3:
+        # Mini Chart Langsung Ditampilkan Tanpa Wrapper HTML yang Memecah Layout
+        fig_spark = create_sparkline(ihsg_data['df_spark'], is_pos)
+        st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False})
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# LOAD DATA SINYAL & KONTEN UTAMA
+# ---------------------------------------------------------
 signals = get_latest_signals()
 
 if not signals:
@@ -481,7 +632,6 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Header Toolbar (Judul + Multiselect Filter Berdampingan)
         col_title, col_filter = st.columns([1.2, 1])
 
         with col_title:
@@ -501,7 +651,6 @@ else:
 
         filtered_df = df_signals[df_signals['signal_label'].isin(selected_filter)]
 
-        # Render Tabel Modern HTML
         render_modern_table(filtered_df)
 
     # ---------------------------------------------------------
@@ -635,7 +784,6 @@ else:
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
-                    # REVISI PROFILE CARD MODERN (MENGGANTIKAN EXPANDER BIASA)
                     st.markdown(f"""
                         <div class="profile-card">
                             <div class="profile-header">
