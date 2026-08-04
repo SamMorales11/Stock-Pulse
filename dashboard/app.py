@@ -62,7 +62,7 @@ def fetch_ihsg_summary():
         return None
 
 # ---------------------------------------------------------
-# FUNGSI MINI SPARKLINE CHART (REVISED & INTEGRATED CARD)
+# FUNGSI MINI SPARKLINE CHART
 # ---------------------------------------------------------
 def create_sparkline(df_series, is_positive):
     line_color = "#34d399" if is_positive else "#f87171"
@@ -73,7 +73,6 @@ def create_sparkline(df_series, is_positive):
     
     fig = go.Figure()
     
-    # 1. Area Chart dengan Kurva Halus (Spline)
     fig.add_trace(go.Scatter(
         x=dates,
         y=values,
@@ -85,7 +84,6 @@ def create_sparkline(df_series, is_positive):
         text=[f"Tanggal: {d}<br>IHSG: <b>{v:,.2f}</b>" for d, v in zip(dates, values)]
     ))
     
-    # 2. Titik Penanda (Marker Dot) di Ujung Tren
     fig.add_trace(go.Scatter(
         x=[dates[-1]],
         y=[values[-1]],
@@ -323,7 +321,7 @@ st.markdown("""
     .card-sell { border-top: 3px solid #ef4444; }
     .card-sell .metric-value { color: #f87171; }
 
-    /* 8. STYLING KUSTOM PLOTLY SPARKLINE CARD CONTAINER */
+    /* 8. PLOTLY SPARKLINE CONTAINER */
     div[data-testid="stPlotlyChart"] {
         background-color: #1e293b !important;
         border: 1px solid #334155 !important;
@@ -393,34 +391,67 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    /* 10. STYLING MULTISELECT FILTER & SELECTBOX */
+    /* 10. REVISI DESAIN MULTISELECT FILTER (PAS & PRESISI) */
     div[data-baseweb="select"] > div {
-        background-color: #1e293b !important;
+        background-color: #0f172a !important;
         border: 1px solid #334155 !important;
         border-radius: 8px !important;
-        min-height: 42px !important;
+        padding: 2px 6px !important;
+        min-height: 36px !important;
+        align-items: center !important;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    div[data-baseweb="select"] > div:hover {
+        border-color: #475569 !important;
     }
     div[data-baseweb="select"] > div:focus-within {
         border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 1px #38bdf8 !important;
     }
+
+    /* Target Ukuran Tag / Pill agar Pas Dalam Kotak Input */
+    [data-baseweb="tag"], 
+    span[data-baseweb="tag"], 
     div[data-baseweb="tag"] {
-        background-color: #0f172a !important;
-        border: 1px solid #334155 !important;
+        background-color: rgba(56, 189, 248, 0.12) !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
         border-radius: 6px !important;
-        padding: 3px 8px !important;
-        margin: 2px !important;
+        padding: 2px 8px !important;
+        margin: 2px 3px !important;
+        height: 26px !important;
+        display: inline-flex !important;
+        align-items: center !important;
     }
+
+    /* Teks Tag */
+    [data-baseweb="tag"] span, 
+    span[data-baseweb="tag"] span, 
     div[data-baseweb="tag"] span {
         color: #38bdf8 !important;
+        font-size: 0.75rem !important;
         font-weight: 600 !important;
-        font-size: 0.78rem !important;
+        letter-spacing: 0.3px !important;
+        line-height: 1 !important;
     }
-    div[data-baseweb="tag"] svg {
+
+    /* Ikon X */
+    [data-baseweb="tag"] svg, 
+    span[data-baseweb="tag"] svg, 
+    div[data-baseweb="tag"] svg,
+    [data-baseweb="tag"] [data-baseweb="icon"] {
         fill: #64748b !important;
+        color: #64748b !important;
+        width: 14px !important;
+        height: 14px !important;
     }
-    div[data-baseweb="tag"] svg:hover {
+    [data-baseweb="tag"] svg:hover, 
+    span[data-baseweb="tag"] svg:hover, 
+    div[data-baseweb="tag"] svg:hover,
+    [data-baseweb="tag"] [data-baseweb="icon"]:hover {
         fill: #f87171 !important;
+        color: #f87171 !important;
     }
+
     div[data-testid="stWidgetLabel"] p {
         color: #94a3b8 !important;
         font-size: 0.78rem !important;
@@ -571,7 +602,6 @@ if ihsg_data:
         """, unsafe_allow_html=True)
 
     with col_i3:
-        # Mini Chart Langsung Ditampilkan Tanpa Wrapper HTML yang Memecah Layout
         fig_spark = create_sparkline(ihsg_data['df_spark'], is_pos)
         st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False})
 
