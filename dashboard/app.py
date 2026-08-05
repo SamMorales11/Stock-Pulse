@@ -41,13 +41,13 @@ def fetch_ihsg_summary():
         # Logika Sentimen Pasar berbasis MA-20
         ma20 = df['Close'].tail(20).mean()
         if latest_close > ma20 * 1.002:
-            sentiment = "🟢 BULLISH"
+            sentiment = "BULLISH"
             sentiment_color = "#34d399"
         elif latest_close < ma20 * 0.998:
-            sentiment = "🔴 BEARISH"
+            sentiment = "BEARISH"
             sentiment_color = "#f87171"
         else:
-            sentiment = "🟡 SIDEWAYS"
+            sentiment = "SIDEWAYS"
             sentiment_color = "#fbbf24"
             
         return {
@@ -122,7 +122,7 @@ def create_sparkline(df_series, is_positive):
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="StockPulse - Screener Saham IDX",
-    page_icon="⚡",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -158,7 +158,7 @@ st.markdown("""
         padding-bottom: 1.2rem;
     }
 
-    /* 3. Branding Header Card di Sidebar */
+    /* 3. Branding Header Card di Sidebar dengan Logo SVG Professional */
     .sidebar-brand-card {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
         border: 1px solid #1e293b;
@@ -169,18 +169,18 @@ st.markdown("""
     }
     .brand-title {
         color: #38bdf8;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         font-weight: 700;
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
     }
     .brand-sub {
         color: #64748b;
         font-size: 0.75rem;
         font-weight: 500;
-        margin-top: 2px;
+        margin-top: 4px;
         letter-spacing: 0.3px;
     }
 
@@ -391,7 +391,7 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    /* 10. REVISI DESAIN MULTISELECT FILTER (PAS & PRESISI) */
+    /* 10. MULTISELECT FILTER TAGS */
     div[data-baseweb="select"] > div {
         background-color: #0f172a !important;
         border: 1px solid #334155 !important;
@@ -409,7 +409,6 @@ st.markdown("""
         box-shadow: 0 0 0 1px #38bdf8 !important;
     }
 
-    /* Target Ukuran Tag / Pill agar Pas Dalam Kotak Input */
     [data-baseweb="tag"], 
     span[data-baseweb="tag"], 
     div[data-baseweb="tag"] {
@@ -423,7 +422,6 @@ st.markdown("""
         align-items: center !important;
     }
 
-    /* Teks Tag */
     [data-baseweb="tag"] span, 
     span[data-baseweb="tag"] span, 
     div[data-baseweb="tag"] span {
@@ -434,7 +432,6 @@ st.markdown("""
         line-height: 1 !important;
     }
 
-    /* Ikon X */
     [data-baseweb="tag"] svg, 
     span[data-baseweb="tag"] svg, 
     div[data-baseweb="tag"] svg,
@@ -503,13 +500,13 @@ def render_modern_table(df):
         signal = str(row.get('signal_label', '')).upper()
         if "BUY" in signal:
             badge_class = "badge-buy"
-            badge_text = "🟢 BUY NOW"
+            badge_text = "BUY NOW"
         elif "SELL" in signal or "AVOID" in signal:
             badge_class = "badge-sell"
-            badge_text = "🔴 SELL / AVOID"
+            badge_text = "SELL / AVOID"
         else:
             badge_class = "badge-wait"
-            badge_text = "🟡 WAIT"
+            badge_text = "WAIT"
         
         close_val = row.get('close', 0)
         formatted_price = f"Rp {close_val:,.0f}".replace(",", ".")
@@ -524,18 +521,25 @@ def render_modern_table(df):
 # 3. SIDEBAR NAVIGATION
 # ---------------------------------------------------------
 with st.sidebar:
+    # Branding Header Card dengan Logo SVG Vector Modern
     st.markdown("""
         <div class="sidebar-brand-card">
-            <div class="brand-title">⚡ StockPulse</div>
+            <div class="brand-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <span>StockPulse</span>
+            </div>
             <div class="brand-sub">IDX Quantitative Analytics Engine</div>
         </div>
     """, unsafe_allow_html=True)
     
     st.markdown("<p style='color: #475569; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;'>MAIN MENU</p>", unsafe_allow_html=True)
     
+    # Menu Navigasi Tanpa Emoji (SaaS Clean Style)
     menu = st.sidebar.radio(
         "",
-        ["📋  Screener Sinyal", "📈  Detail Saham", "📊  Analisa Fundamental"]
+        ["Screener Sinyal", "Detail Saham", "Analisa Fundamental"]
     )
 
     st.markdown("""
@@ -581,7 +585,7 @@ if ihsg_data:
     with col_i1:
         st.markdown(f"""
             <div class="metric-card" style="border-top: 3px solid {change_color};">
-                <div class="metric-label">🇮🇩 Indeks Harga Saham Gabungan (IHSG)</div>
+                <div class="metric-label">Indeks Harga Saham Gabungan (IHSG)</div>
                 <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 4px;">
                     <span class="metric-value" style="color: #f8fafc; font-size: 1.55rem;">{formatted_close}</span>
                     <span style="color: {change_color}; font-weight: 700; font-size: 0.88rem;">{change_str}</span>
@@ -613,14 +617,14 @@ if ihsg_data:
 signals = get_latest_signals()
 
 if not signals:
-    st.warning("⚠️ Belum ada data di Database SQLite. Silakan jalankan pipeline `python run_fase4_test.py` terlebih dahulu.")
+    st.warning("Belum ada data di Database SQLite. Silakan jalankan pipeline `python run_fase4_test.py` terlebih dahulu.")
 else:
     df_signals = pd.DataFrame(signals)
 
     # ---------------------------------------------------------
     # MENU 1: SCREENER SINYAL
     # ---------------------------------------------------------
-    if "Screener Sinyal" in menu:
+    if menu == "Screener Sinyal":
         total_stocks = len(df_signals)
         buy_count = len(df_signals[df_signals['signal_label'] == "BUY NOW"])
         wait_count = len(df_signals[df_signals['signal_label'] == "WAIT"])
@@ -639,7 +643,7 @@ else:
         with c2:
             st.markdown(f"""
                 <div class="metric-card card-buy">
-                    <div class="metric-label">Sinyal BUY NOW 🟢</div>
+                    <div class="metric-label">Sinyal BUY NOW</div>
                     <div class="metric-value">{buy_count}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -647,7 +651,7 @@ else:
         with c3:
             st.markdown(f"""
                 <div class="metric-card card-wait">
-                    <div class="metric-label">Sinyal WAIT 🟡</div>
+                    <div class="metric-label">Sinyal WAIT</div>
                     <div class="metric-value">{wait_count}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -655,7 +659,7 @@ else:
         with c4:
             st.markdown(f"""
                 <div class="metric-card card-sell">
-                    <div class="metric-label">Sinyal SELL / AVOID 🔴</div>
+                    <div class="metric-label">Sinyal SELL / AVOID</div>
                     <div class="metric-value">{sell_count}</div>
                 </div>
             """, unsafe_allow_html=True)
@@ -667,7 +671,7 @@ else:
         with col_title:
             st.markdown("""
                 <div style="padding-top: 4px;">
-                    <h4 style="color: #f8fafc; font-weight: 700; margin: 0; font-size: 1.15rem;">📋 Hasil Skrining Sinyal Harian</h4>
+                    <h4 style="color: #f8fafc; font-weight: 700; margin: 0; font-size: 1.15rem;">Hasil Skrining Sinyal Harian</h4>
                     <p style="color: #64748b; font-size: 0.8rem; margin: 2px 0 0 0;">Daftar keputusan rekomendasi sinyal berdasarkan kuantitatif & guardrails</p>
                 </div>
             """, unsafe_allow_html=True)
@@ -686,8 +690,8 @@ else:
     # ---------------------------------------------------------
     # MENU 2: DETAIL SAHAM & GRAFIK
     # ---------------------------------------------------------
-    elif "Detail Saham" in menu:
-        st.markdown("##### 🔍 Grafik & Indikator Teknikal")
+    elif menu == "Detail Saham":
+        st.markdown("##### Grafik & Indikator Teknikal")
         
         selected_ticker = st.selectbox(
             "Pilih Saham:",
@@ -707,8 +711,8 @@ else:
     # ---------------------------------------------------------
     # MENU 3: ANALISA FUNDAMENTAL
     # ---------------------------------------------------------
-    elif "Analisa Fundamental" in menu:
-        st.markdown("##### 📊 Analisa Fundamental & Profil Perusahaan")
+    elif menu == "Analisa Fundamental":
+        st.markdown("##### Analisa Fundamental & Profil Perusahaan")
         
         selected_ticker = st.selectbox(
             "Pilih Saham:",
@@ -729,7 +733,7 @@ else:
                         <div class="hero-container" style="padding: 18px 22px; margin-bottom: 20px;">
                             <div style="font-size: 1.3rem; font-weight: 700; color: #f8fafc;">{long_name} ({selected_ticker})</div>
                             <div style="font-size: 0.85rem; color: #38bdf8; margin-top: 4px;">
-                                🏢 Sektor: <b>{sector}</b> | 🏭 Industri: <b>{industry}</b>
+                                Sektor: <b>{sector}</b> | Industri: <b>{industry}</b>
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
@@ -817,7 +821,7 @@ else:
                     st.markdown(f"""
                         <div class="profile-card">
                             <div class="profile-header">
-                                <span style="color: #38bdf8;">🏢</span> Profil & Ringkasan Bisnis Perusahaan
+                                Profil & Ringkasan Bisnis Perusahaan
                             </div>
                             <div class="profile-body">
                                 {summary}
