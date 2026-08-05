@@ -9,21 +9,50 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from src.data.fetcher import fetch_stock_data
 from src.data.indicators import add_technical_indicators
 
-# Deteksi lokasi database SQLite
-def get_db_path():
-    path_models = os.path.join(os.path.dirname(__file__), 'data', 'models', 'database.sqlite')
-    path_data = os.path.join(os.path.dirname(__file__), 'data', 'database.sqlite')
-    
-    if os.path.exists(path_models):
-        return path_models
-    elif os.path.exists(path_data):
-        return path_data
-    else:
-        os.makedirs(os.path.dirname(path_models), exist_ok=True)
-        return path_models
+# ---------------------------------------------------------
+# FUNGSI LOKASI DATABASE MULTI-PATH
+# ---------------------------------------------------------
+def get_all_db_paths():
+    base_dir = os.path.dirname(__file__)
+    return [
+        os.path.join(base_dir, 'data', 'database.sqlite'),
+        os.path.join(base_dir, 'data', 'models', 'database.sqlite')
+    ]
+
+def init_db():
+    for db_path in get_all_db_paths():
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS signals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT,
+                ticker TEXT,
+                close REAL,
+                signal_label TEXT,
+                reason TEXT
+            )
+        """)
+        conn.commit()
+        conn.close()
+
+def save_signals_to_db(signals):
+    for db_path in get_all_db_paths():
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM signals")  # Reset data dengan sinyal terbaru
+        for sig in signals:
+            cursor.execute("""
+                INSERT INTO signals (date, ticker, close, signal_label, reason)
+                VALUES (?, ?, ?, ?, ?)
+            """, (sig['date'], sig['ticker'], sig['close'], sig['signal_label'], sig['reason']))
+        conn.commit()
+        conn.close()
 
 # ---------------------------------------------------------
-# DAFTAR TICKER SAHAM IDX (BIG CAP & LQ45)
+# DAFTAR TICKER SAHAM IDX (30 BIG CAP & LQ45)
 # ---------------------------------------------------------
 TICKERS = [
     # Perbankan (Banking)
@@ -41,31 +70,6 @@ TICKERS = [
     # Otomotif, Infrastruktur & Industri
     "ASII.JK", "JSMR.JK", "UNTR.JK", "TPIA.JK", "BRPT.JK", "INTP.JK"
 ]
-
-def init_db(conn):
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS signals (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT,
-            ticker TEXT,
-            close REAL,
-            signal_label TEXT,
-            reason TEXT
-        )
-    """)
-    conn.commit()
-
-def save_signals_to_db(conn, signals):
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM signals") # Perbarui dengan sinyal terbaru
-    
-    for sig in signals:
-        cursor.execute("""
-            INSERT INTO signals (date, ticker, close, signal_label, reason)
-            VALUES (?, ?, ?, ?, ?)
-        """, (sig['date'], sig['ticker'], sig['close'], sig['signal_label'], sig['reason']))
-    conn.commit()
 
 def generate_mock_ml_signal(df):
     if df.empty or len(df) < 2:
@@ -86,9 +90,8 @@ def generate_mock_ml_signal(df):
 def main():
     print("🚀 Memulai Pipeline Pemrosesan Sinyal Saham StockPulse...\n")
     
-    db_path = get_db_path()
-    conn = sqlite3.connect(db_path)
-    init_db(conn)
+    # Inisialisasi struktur tabel di seluruh lokasi DB
+    init_db()
     
     signals_to_save = []
     total = len(TICKERS)
@@ -120,13 +123,12 @@ def main():
         except Exception as e:
             print(f"❌ Error memproses {ticker}: {e}")
 
+    # Simpan hasil sinyal ke seluruh lokasi DB
     if signals_to_save:
-        save_signals_to_db(conn, signals_to_save)
-        print(f"\n✅ BERHASIL! {len(signals_to_save)} sinyal saham telah diperbarui ke Database SQLite.")
+        save_signals_to_db(signals_to_save)
+        print(f"\n✅ BERHASIL! {len(signals_to_save)} sinyal saham telah diperbarui ke seluruh Database SQLite.")
     else:
         print("\n⚠️ Tidak ada data sinyal yang berhasil disimpan.")
-        
-    conn.close()
 
 if __name__ == "__main__":
     main()
