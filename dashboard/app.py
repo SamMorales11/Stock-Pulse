@@ -62,6 +62,40 @@ def fetch_ihsg_summary():
         return None
 
 # ---------------------------------------------------------
+# FUNGSI METRIK PERFORMA SEKTOR IDX (SECTOR BREADTH)
+# ---------------------------------------------------------
+@st.cache_data(ttl=1800)
+def fetch_sector_performance():
+    sectors = {
+        "Finansial": ["BBCA.JK", "BBRI.JK", "BMRI.JK", "BBNI.JK"],
+        "Energi": ["ADRO.JK", "PTBA.JK", "PGAS.JK", "MEDC.JK"],
+        "Konsumer": ["UNVR.JK", "ICBP.JK", "INDF.JK", "AMRT.JK"],
+        "Teknologi & Telko": ["TLKM.JK", "GOTO.JK", "ISAT.JK", "EXCL.JK"],
+        "Tambang & Industri": ["ANTM.JK", "MDKA.JK", "ASII.JK", "UNTR.JK"]
+    }
+    
+    all_tickers = [t for sub in sectors.values() for t in sub]
+    try:
+        df_all = yf.download(all_tickers, period="5d", progress=False)['Close']
+        if df_all.empty or len(df_all) < 2:
+            return {}
+        
+        latest = df_all.iloc[-1]
+        prev = df_all.iloc[-2]
+        pct_changes = ((latest - prev) / prev) * 100
+        
+        sector_results = {}
+        for sector_name, tickers in sectors.items():
+            valid_changes = [pct_changes[t] for t in tickers if t in pct_changes and not pd.isna(pct_changes[t])]
+            if valid_changes:
+                sector_results[sector_name] = sum(valid_changes) / len(valid_changes)
+            else:
+                sector_results[sector_name] = 0.0
+        return sector_results
+    except Exception:
+        return {}
+
+# ---------------------------------------------------------
 # FUNGSI MINI SPARKLINE CHART
 # ---------------------------------------------------------
 def create_sparkline(df_series, is_positive):
@@ -303,6 +337,32 @@ st.markdown("""
     .card-sell { border-top: 3px solid #ef4444; }
     .card-sell .metric-value { color: #f87171; }
 
+    /* STYLING KARDUS SEKTOR */
+    .sector-card {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: border-color 0.2s;
+    }
+    .sector-card:hover {
+        border-color: #475569;
+    }
+    .sector-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .sector-pct {
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+
     div[data-testid="stPlotlyChart"] {
         background-color: #1e293b !important;
         border: 1px solid #334155 !important;
@@ -369,7 +429,6 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    /* CARD KALKULATOR RISIKO */
     .calc-box {
         background-color: #1e293b;
         border: 1px solid #334155;
@@ -387,7 +446,6 @@ st.markdown("""
         gap: 10px;
     }
 
-    /* STYLING KUSTOM INPUT NUMBER AGAR RAPAT & SEJAJAR */
     div[data-testid="stNumberInput"] input {
         background-color: #0f172a !important;
         color: #f8fafc !important;
@@ -532,6 +590,26 @@ if ihsg_data:
         fig_spark = create_sparkline(ihsg_data['df_spark'], is_pos)
         st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False})
 
+    # ---------------------------------------------------------
+    # FITUR BARU: SECTOR PERFORMANCE BREADTH BAR
+    # ---------------------------------------------------------
+    sector_perf = fetch_sector_performance()
+    if sector_perf:
+        st.markdown("<div style='margin-top: 10px; margin-bottom: 6px;'><span style='color: #64748b; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;'>Performa Sektor Harian (IDX Sector Breadth):</span></div>", unsafe_allow_html=True)
+        s_cols = st.columns(len(sector_perf))
+        
+        for idx, (s_name, s_val) in enumerate(sector_perf.items()):
+            s_sign = "+" if s_val >= 0 else ""
+            s_color = "#34d399" if s_val >= 0 else "#f87171"
+            
+            with s_cols[idx]:
+                st.markdown(f"""
+                    <div class="sector-card">
+                        <span class="sector-title">{s_name}</span>
+                        <span class="sector-pct" style="color: {s_color};">{s_sign}{s_val:.2f}%</span>
+                    </div>
+                """, unsafe_allow_html=True)
+
     st.markdown("<br>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -663,9 +741,6 @@ else:
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
-                    # ---------------------------------------------------------
-                    # REVISI: KALKULATOR RISIKO GRID 3x2 SEJAJAR & PRESISI
-                    # ---------------------------------------------------------
                     st.markdown("""
                         <div class="calc-box">
                             <div class="calc-header">
@@ -674,7 +749,6 @@ else:
                         </div>
                     """, unsafe_allow_html=True)
 
-                    # BARIS 1 INPUT (3 KOLOM SEJAJAR)
                     r1_c1, r1_c2, r1_c3 = st.columns(3)
                     with r1_c1:
                         total_cap = st.number_input(
@@ -700,7 +774,6 @@ else:
                             step=10.0
                         )
 
-                    # BARIS 2 INPUT (3 KOLOM SEJAJAR)
                     r2_c1, r2_c2, r2_c3 = st.columns(3)
                     with r2_c1:
                         default_sl = round(latest_close_val * 0.95)
@@ -729,7 +802,6 @@ else:
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
-                    # LOGIKA HITUNG METRIKS RISK
                     risk_per_share = entry_price - stop_loss
                     reward_per_share = target_price - entry_price
 
