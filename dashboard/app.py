@@ -369,13 +369,36 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    /* Styling Toolbar Control Chart Box */
-    .chart-control-box {
+    /* CARD KALKULATOR RISIKO */
+    .calc-box {
         background-color: #1e293b;
         border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 14px 18px;
-        margin-bottom: 16px;
+        border-radius: 12px 12px 0 0;
+        padding: 18px 22px;
+        margin-top: 24px;
+        border-bottom: none;
+    }
+    .calc-header {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* STYLING KUSTOM INPUT NUMBER AGAR RAPAT & SEJAJAR */
+    div[data-testid="stNumberInput"] input {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+    }
+    div[data-testid="stNumberInput"] button {
+        background-color: #0f172a !important;
+        border-color: #334155 !important;
+        color: #94a3b8 !important;
     }
 
     div[data-baseweb="select"] > div {
@@ -588,12 +611,11 @@ else:
         render_modern_table(filtered_df)
 
     # ---------------------------------------------------------
-    # MENU 2: DETAIL SAHAM & GRAFIK (PERBARUAN DENGAN SWITCHER & TOGGLE)
+    # MENU 2: DETAIL SAHAM & KALKULATOR MONEY MANAGEMENT
     # ---------------------------------------------------------
     elif menu == "Detail Saham":
         st.markdown("##### Grafik & Indikator Teknikal Interaktif")
         
-        # Toolbar Kontrol (Pilih Ticker, Timeframe, & Indikator Overlay)
         col_select, col_tf = st.columns([1.2, 1])
 
         with col_select:
@@ -609,10 +631,8 @@ else:
                 value="1Y"
             )
 
-        # Mapping Timeframe ke Parameter Yahoo Finance
         tf_map = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "YTD": "ytd"}
 
-        # Baris Checkbox Toggle Indikator
         st.markdown("<p style='color: #64748b; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;'>Kustomisasi Overlay & Sub-chart Indikator:</p>", unsafe_allow_html=True)
         t1, t2, t3, t4 = st.columns(4)
 
@@ -630,10 +650,9 @@ else:
                 df_stock = fetch_stock_data(selected_ticker, period=tf_map[selected_tf])
                 
                 if not df_stock.empty:
-                    # Hitung indikator teknikal lengkap
                     df_ind = add_technical_indicators(df_stock)
+                    latest_close_val = float(df_stock['Close'].iloc[-1])
                     
-                    # Generate & Plot Grafik berdasarkan Toggle
                     fig = plot_stock_chart(
                         df_ind,
                         selected_ticker,
@@ -643,6 +662,130 @@ else:
                         show_macd=show_macd
                     )
                     st.plotly_chart(fig, use_container_width=True)
+
+                    # ---------------------------------------------------------
+                    # REVISI: KALKULATOR RISIKO GRID 3x2 SEJAJAR & PRESISI
+                    # ---------------------------------------------------------
+                    st.markdown("""
+                        <div class="calc-box">
+                            <div class="calc-header">
+                                <span style="color: #38bdf8;">🎯</span> Kalkulator Position Sizing & Risk Management
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    # BARIS 1 INPUT (3 KOLOM SEJAJAR)
+                    r1_c1, r1_c2, r1_c3 = st.columns(3)
+                    with r1_c1:
+                        total_cap = st.number_input(
+                            "Total Modal Trading (Rp):",
+                            min_value=1000000,
+                            value=50000000,
+                            step=1000000,
+                            format="%d"
+                        )
+                    with r1_c2:
+                        risk_pct = st.number_input(
+                            "Toleransi Risiko per Trade (%):",
+                            min_value=0.5,
+                            max_value=10.0,
+                            value=2.0,
+                            step=0.5
+                        )
+                    with r1_c3:
+                        entry_price = st.number_input(
+                            "Harga Entry (Rp):",
+                            min_value=1.0,
+                            value=latest_close_val,
+                            step=10.0
+                        )
+
+                    # BARIS 2 INPUT (3 KOLOM SEJAJAR)
+                    r2_c1, r2_c2, r2_c3 = st.columns(3)
+                    with r2_c1:
+                        default_sl = round(latest_close_val * 0.95)
+                        stop_loss = st.number_input(
+                            "Harga Stop Loss (Rp):",
+                            min_value=1.0,
+                            value=float(default_sl),
+                            step=10.0
+                        )
+                    with r2_c2:
+                        default_tp = round(latest_close_val * 1.10)
+                        target_price = st.number_input(
+                            "Harga Target Profit (Rp):",
+                            min_value=1.0,
+                            value=float(default_tp),
+                            step=10.0
+                        )
+                    with r2_c3:
+                        max_allowed_loss = total_cap * (risk_pct / 100.0)
+                        st.number_input(
+                            "Maks Batas Loss Toleransi (Rp):",
+                            value=float(max_allowed_loss),
+                            disabled=True,
+                            format="%.0f"
+                        )
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    # LOGIKA HITUNG METRIKS RISK
+                    risk_per_share = entry_price - stop_loss
+                    reward_per_share = target_price - entry_price
+
+                    if risk_per_share <= 0:
+                        st.error("⚠️ Harga Stop Loss harus lebih kecil dari Harga Entry!")
+                    elif reward_per_share <= 0:
+                        st.warning("⚠️ Harga Target Profit harus lebih besar dari Harga Entry.")
+                    else:
+                        max_shares = max_allowed_loss / risk_per_share
+                        max_lots = int(max_shares // 100)
+                        
+                        total_investment = max_lots * 100 * entry_price
+                        cap_alloc_pct = (total_investment / total_cap) * 100 if total_cap > 0 else 0
+                        rr_ratio = reward_per_share / risk_per_share
+                        potential_profit = max_lots * 100 * reward_per_share
+                        actual_risk_nominal = max_lots * 100 * risk_per_share
+
+                        rr_color = "#34d399" if rr_ratio >= 1.5 else ("#fbbf24" if rr_ratio >= 1.0 else "#f87171")
+
+                        rc1, rc2, rc3, rc4 = st.columns(4)
+
+                        with rc1:
+                            st.markdown(f"""
+                                <div class="metric-card card-buy">
+                                    <div class="metric-label">Max Pembelian (Lot)</div>
+                                    <div class="metric-value">{max_lots:,.0f} <span style="font-size: 0.9rem; color: #94a3b8;">Lot</span></div>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                        with rc2:
+                            st.markdown(f"""
+                                <div class="metric-card">
+                                    <div class="metric-label">Total Alokasi Modal</div>
+                                    <div class="metric-value" style="color: #38bdf8; font-size: 1.45rem;">Rp {total_investment:,.0f}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">{cap_alloc_pct:.1f}% dari Total Modal</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                        with rc3:
+                            st.markdown(f"""
+                                <div class="metric-card">
+                                    <div class="metric-label">Maksimal Risiko (Loss)</div>
+                                    <div class="metric-value" style="color: #f87171; font-size: 1.45rem;">-Rp {actual_risk_nominal:,.0f}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">{(actual_risk_nominal/total_cap)*100:.2f}% Toleransi Terpakai</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                        with rc4:
+                            st.markdown(f"""
+                                <div class="metric-card">
+                                    <div class="metric-label">Risk / Reward Ratio</div>
+                                    <div class="metric-value" style="color: {rr_color}; font-size: 1.45rem;">1 : {rr_ratio:.2f}</div>
+                                    <div style="font-size: 0.75rem; color: #34d399; margin-top: 4px;">Potensi Profit: +Rp {potential_profit:,.0f}</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+
                 else:
                     st.error(f"Gagal mengambil data {selected_ticker} untuk timeframe {selected_tf}.")
 
