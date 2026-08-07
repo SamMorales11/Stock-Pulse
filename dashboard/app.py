@@ -138,15 +138,9 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* 1. Sembunyikan Navigasi Bawaan Streamlit */
-    [data-testid="stSidebarNav"] {
-        display: none !important;
-    }
+    [data-testid="stSidebarNav"] { display: none !important; }
 
-    /* 2. Background Aplikasi */
-    .main {
-        background-color: #0b0f17;
-    }
+    .main { background-color: #0b0f17; }
 
     section[data-testid="stSidebar"] {
         background-color: #0d131f !important;
@@ -158,7 +152,6 @@ st.markdown("""
         padding-bottom: 1.2rem;
     }
 
-    /* 3. Branding Header Card di Sidebar dengan Logo SVG Professional */
     .sidebar-brand-card {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
         border: 1px solid #1e293b;
@@ -184,14 +177,8 @@ st.markdown("""
         letter-spacing: 0.3px;
     }
 
-    /* 4. Styling Streamlit Radio Buttons di Sidebar */
-    div[data-testid="stRadio"] > label {
-        display: none !important;
-    }
-    
-    div[data-testid="stRadio"] > div[role="radiogroup"] {
-        gap: 6px !important;
-    }
+    div[data-testid="stRadio"] > label { display: none !important; }
+    div[data-testid="stRadio"] > div[role="radiogroup"] { gap: 6px !important; }
 
     div[data-testid="stRadio"] > div[role="radiogroup"] > label {
         background-color: transparent !important;
@@ -237,7 +224,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
 
-    /* 5. Footer Info Box di Sidebar */
     .sidebar-footer {
         margin-top: 2.5rem;
         padding: 12px;
@@ -256,7 +242,6 @@ st.markdown("""
         margin-right: 6px;
     }
 
-    /* 6. Header Banner */
     .hero-container {
         background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         border: 1px solid #334155;
@@ -288,7 +273,6 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* 7. Metric Cards Design */
     .metric-card {
         background-color: #1e293b;
         border: 1px solid #334155;
@@ -296,9 +280,7 @@ st.markdown("""
         padding: 16px 20px;
         transition: transform 0.2s, border-color 0.2s;
     }
-    .metric-card:hover {
-        border-color: #475569;
-    }
+    .metric-card:hover { border-color: #475569; }
     .metric-label {
         font-size: 0.78rem;
         font-weight: 600;
@@ -321,7 +303,6 @@ st.markdown("""
     .card-sell { border-top: 3px solid #ef4444; }
     .card-sell .metric-value { color: #f87171; }
 
-    /* 8. PLOTLY SPARKLINE CONTAINER */
     div[data-testid="stPlotlyChart"] {
         background-color: #1e293b !important;
         border: 1px solid #334155 !important;
@@ -330,7 +311,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
 
-    /* 9. CUSTOM MODERN TABLE DESIGN */
     .custom-table-container {
         border: 1px solid #334155;
         border-radius: 10px;
@@ -363,9 +343,7 @@ st.markdown("""
         background-color: rgba(51, 65, 85, 0.4);
         transition: background-color 0.15s ease;
     }
-    .custom-table tr:last-child td {
-        border-bottom: none;
-    }
+    .custom-table tr:last-child td { border-bottom: none; }
 
     .custom-badge {
         display: inline-block;
@@ -391,7 +369,15 @@ st.markdown("""
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    /* 10. MULTISELECT FILTER TAGS */
+    /* Styling Toolbar Control Chart Box */
+    .chart-control-box {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+    }
+
     div[data-baseweb="select"] > div {
         background-color: #0f172a !important;
         border: 1px solid #334155 !important;
@@ -399,90 +385,6 @@ st.markdown("""
         padding: 2px 6px !important;
         min-height: 36px !important;
         align-items: center !important;
-        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
-    }
-    div[data-baseweb="select"] > div:hover {
-        border-color: #475569 !important;
-    }
-    div[data-baseweb="select"] > div:focus-within {
-        border-color: #38bdf8 !important;
-        box-shadow: 0 0 0 1px #38bdf8 !important;
-    }
-
-    [data-baseweb="tag"], 
-    span[data-baseweb="tag"], 
-    div[data-baseweb="tag"] {
-        background-color: rgba(56, 189, 248, 0.12) !important;
-        border: 1px solid rgba(56, 189, 248, 0.25) !important;
-        border-radius: 6px !important;
-        padding: 2px 8px !important;
-        margin: 2px 3px !important;
-        height: 26px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-    }
-
-    [data-baseweb="tag"] span, 
-    span[data-baseweb="tag"] span, 
-    div[data-baseweb="tag"] span {
-        color: #38bdf8 !important;
-        font-size: 0.75rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.3px !important;
-        line-height: 1 !important;
-    }
-
-    [data-baseweb="tag"] svg, 
-    span[data-baseweb="tag"] svg, 
-    div[data-baseweb="tag"] svg,
-    [data-baseweb="tag"] [data-baseweb="icon"] {
-        fill: #64748b !important;
-        color: #64748b !important;
-        width: 14px !important;
-        height: 14px !important;
-    }
-    [data-baseweb="tag"] svg:hover, 
-    span[data-baseweb="tag"] svg:hover, 
-    div[data-baseweb="tag"] svg:hover,
-    [data-baseweb="tag"] [data-baseweb="icon"]:hover {
-        fill: #f87171 !important;
-        color: #f87171 !important;
-    }
-
-    div[data-testid="stWidgetLabel"] p {
-        color: #94a3b8 !important;
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        margin-bottom: 4px !important;
-    }
-
-    /* 11. COMPANY PROFILE CARD */
-    .profile-card {
-        background-color: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 22px 26px;
-        margin-top: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-    .profile-header {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #f8fafc;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border-bottom: 1px solid rgba(51, 65, 85, 0.6);
-        padding-bottom: 10px;
-    }
-    .profile-body {
-        font-size: 0.88rem;
-        color: #cbd5e1;
-        line-height: 1.7;
-        text-align: justify;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -521,7 +423,6 @@ def render_modern_table(df):
 # 3. SIDEBAR NAVIGATION
 # ---------------------------------------------------------
 with st.sidebar:
-    # Branding Header Card dengan Logo SVG Vector Modern
     st.markdown("""
         <div class="sidebar-brand-card">
             <div class="brand-title">
@@ -536,7 +437,6 @@ with st.sidebar:
     
     st.markdown("<p style='color: #475569; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;'>MAIN MENU</p>", unsafe_allow_html=True)
     
-    # Menu Navigasi Tanpa Emoji (SaaS Clean Style)
     menu = st.sidebar.radio(
         "",
         ["Screener Sinyal", "Detail Saham", "Analisa Fundamental"]
@@ -688,25 +588,63 @@ else:
         render_modern_table(filtered_df)
 
     # ---------------------------------------------------------
-    # MENU 2: DETAIL SAHAM & GRAFIK
+    # MENU 2: DETAIL SAHAM & GRAFIK (PERBARUAN DENGAN SWITCHER & TOGGLE)
     # ---------------------------------------------------------
     elif menu == "Detail Saham":
-        st.markdown("##### Grafik & Indikator Teknikal")
+        st.markdown("##### Grafik & Indikator Teknikal Interaktif")
         
-        selected_ticker = st.selectbox(
-            "Pilih Saham:",
-            options=df_signals['ticker'].tolist()
-        )
+        # Toolbar Kontrol (Pilih Ticker, Timeframe, & Indikator Overlay)
+        col_select, col_tf = st.columns([1.2, 1])
+
+        with col_select:
+            selected_ticker = st.selectbox(
+                "Pilih Ticker Saham:",
+                options=df_signals['ticker'].tolist()
+            )
+
+        with col_tf:
+            selected_tf = st.select_slider(
+                "Rentang Waktu (Timeframe):",
+                options=["1M", "3M", "6M", "1Y", "YTD"],
+                value="1Y"
+            )
+
+        # Mapping Timeframe ke Parameter Yahoo Finance
+        tf_map = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "YTD": "ytd"}
+
+        # Baris Checkbox Toggle Indikator
+        st.markdown("<p style='color: #64748b; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;'>Kustomisasi Overlay & Sub-chart Indikator:</p>", unsafe_allow_html=True)
+        t1, t2, t3, t4 = st.columns(4)
+
+        with t1:
+            show_vol = st.checkbox("Volume Overlay", value=True)
+        with t2:
+            show_ma = st.checkbox("Moving Averages (MA20/50)", value=True)
+        with t3:
+            show_bb = st.checkbox("Bollinger Bands", value=False)
+        with t4:
+            show_macd = st.checkbox("MACD Sub-chart", value=True)
 
         if selected_ticker:
-            with st.spinner(f"Memuat data {selected_ticker}..."):
-                df_stock = fetch_stock_data(selected_ticker, period="1y")
+            with st.spinner(f"Memuat data & grafik {selected_ticker}..."):
+                df_stock = fetch_stock_data(selected_ticker, period=tf_map[selected_tf])
+                
                 if not df_stock.empty:
+                    # Hitung indikator teknikal lengkap
                     df_ind = add_technical_indicators(df_stock)
-                    fig = plot_stock_chart(df_ind, selected_ticker)
+                    
+                    # Generate & Plot Grafik berdasarkan Toggle
+                    fig = plot_stock_chart(
+                        df_ind,
+                        selected_ticker,
+                        show_volume=show_vol,
+                        show_ma=show_ma,
+                        show_bb=show_bb,
+                        show_macd=show_macd
+                    )
                     st.plotly_chart(fig, use_container_width=True)
                 else:
-                    st.error("Gagal memuat data grafik saham.")
+                    st.error(f"Gagal mengambil data {selected_ticker} untuk timeframe {selected_tf}.")
 
     # ---------------------------------------------------------
     # MENU 3: ANALISA FUNDAMENTAL
