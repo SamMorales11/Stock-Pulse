@@ -82,3 +82,28 @@ StockPulse/
 ├── requirements.txt        # Daftar dependensi library Python
 └── README.md
 ```
+
+## 🚀 Cara Menjalankan Project
+
+## 1. Clone Repository
+```text
+git clone [https://github.com/UsernameKamu/StockPulse.git](https://github.com/UsernameKamu/StockPulse.git)
+cd StockPulse
+```
+## 2. Aktifkan Virtual Environment & Install Dependensi
+```text
+# Untuk Windows PowerShell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Install dependensi
+pip install -r requirements.txt
+```
+## 3. Jalankan Pipeline Pembaruan Sinyal
+```text
+python run_fase4_test.py
+```
+## 4. Jalankan Dashboard Streamlit
+```text
+streamlit run dashboard/app.py
+```
