@@ -16,7 +16,7 @@ StockPulse adalah platform analitik kuantitatif dan skrining saham berbasis *Mac
 ### 2. Grafik Teknikal Interaktif & Indicator Toggle
 <img width="994" height="183" alt="Screenshot 2026-08-11 081712" src="https://github.com/user-attachments/assets/2dcd3d52-fd8a-40e0-bef1-fb53ed4a08b5" />
 <img width="991" height="588" alt="Screenshot 2026-08-11 081728" src="https://github.com/user-attachments/assets/d53dc11a-8773-41f8-bcc5-a9c2178637c1" />
-*Grafik Candlestick interaktif dengan switcher timeframe (1M, 3M, 6M, 1Y, YTD) serta opsi toggle untuk Volume, MA20/50, Bollinger Bands, dan MACD.*
+Grafik Candlestick interaktif dengan switcher timeframe (1M, 3M, 6M, 1Y, YTD) serta opsi toggle untuk Volume, MA20/50, Bollinger Bands, dan MACD.
 
 ### 3. Kalkulator Position Sizing & Risk Management
 <img width="973" height="349" alt="Screenshot 2026-08-11 082008" src="https://github.com/user-attachments/assets/45b93b5e-fd1a-4220-9807-c07b5dbd2411" />
