@@ -37,7 +37,7 @@ StockPulse adalah platform analitik kuantitatif dan skrining saham berbasis *Mac
   - Performa harian 5 sektor utama IDX (Finansial, Energi, Konsumer, Teknologi & Telko, Tambang & Industri).
 - **Automated ML Screener**:
   - Rekomendasi sinyal kuantitatif yang divalidasi oleh *Guardrails* teknikal (RSI, SMA, Overbought/Oversold).
-  - Filter multi-pilihan modern untuk mengisolasi sinyal *BUY*, *WAIT*, atau *SELL*.
+  - Filter multi pilihan modern untuk mengisolasi sinyal *BUY*, *WAIT*, atau *SELL*.
 - **Interactive Technical Analysis**:
   - Plotly Candlestick subplots yang tersinkronisasi (*Shared X-Axis*).
   - Switcher timeframe cepat (`1M`, `3M`, `6M`, `1Y`, `YTD`).
