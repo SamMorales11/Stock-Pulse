@@ -20,7 +20,7 @@ Grafik Candlestick interaktif dengan switcher timeframe (1M, 3M, 6M, 1Y, YTD) se
 
 ### 3. Kalkulator Position Sizing & Risk Management
 <img width="973" height="349" alt="Screenshot 2026-08-11 082008" src="https://github.com/user-attachments/assets/45b93b5e-fd1a-4220-9807-c07b5dbd2411" />
-*Fitur kalkulator terintegrasi untuk menghitung jumlah lot maksimal, total alokasi modal, batas stop loss, dan Risk/Reward Ratio secara objektif.*
+Fitur kalkulator terintegrasi untuk menghitung jumlah lot maksimal, total alokasi modal, batas stop loss, dan Risk/Reward Ratio secara objektif.
 
 ### 4. Analisa Fundamental & Profil Perusahaan
 <img width="988" height="416" alt="Screenshot 2026-08-11 082104" src="https://github.com/user-attachments/assets/6140f6da-0e41-4f99-a603-32b836734dee" />
