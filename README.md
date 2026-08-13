@@ -11,7 +11,7 @@ StockPulse adalah platform analitik kuantitatif dan skrining saham berbasis *Mac
 ### 1. Market Overview & Screener Sinyal Harian
 <img width="980" height="521" alt="Screenshot 2026-08-11 081540" src="https://github.com/user-attachments/assets/1498a7a2-dda7-46b0-aa69-97fa683b682f" />
 <img width="986" height="585" alt="Screenshot 2026-08-11 081552" src="https://github.com/user-attachments/assets/c39ba936-fc9a-4277-99e5-9e6d81ff21c3" />
-*Tampilan utama mencakup widget IHSG, performa sektor harian (IDX Sector Breadth), metric cards sinyal, dan tabel rekomendasi.*
+Tampilan utama mencakup widget IHSG, performa sektor harian (IDX Sector Breadth), metric cards sinyal, dan tabel rekomendasi.
 
 ### 2. Grafik Teknikal Interaktif & Indicator Toggle
 <img width="994" height="183" alt="Screenshot 2026-08-11 081712" src="https://github.com/user-attachments/assets/2dcd3d52-fd8a-40e0-bef1-fb53ed4a08b5" />
